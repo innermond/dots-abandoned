@@ -12,7 +12,7 @@ type User struct {
 func NewUser(store store.User) *User {
 	return &User{store}
 }
-func (us *User) Add(ud dots.User) (int, error) {
-	id, err := us.store.Add(ud)
+func (u *User) Add(ud dots.User) (int, error) {
+	id, err := u.store.Add(ud)
 	return int(id), err
 }

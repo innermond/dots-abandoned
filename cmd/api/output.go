@@ -14,6 +14,7 @@ type output struct {
 	Code    int         `json:"code"`
 }
 
+// it is not a middleware - signature is intended
 func (outval *output) into(r *http.Request, w http.ResponseWriter) {
 
 	out, ok := r.Context().Value(outputKey).(*output)

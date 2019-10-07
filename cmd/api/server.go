@@ -38,29 +38,31 @@ func (s *server) handleUserPost() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
+		// out is the response
 		var out output
+		defer out.into(r, w)
 
+		// input data to app data (json to struct)
 		var ud dots.User
 		if err := json.NewDecoder(r.Body).Decode(&ud); err != nil {
 			out = output{Payload: err, Code: http.StatusBadRequest}
-			out.into(r, w)
 			return
 		}
 
+		// send app data to service layer
 		newid, err := userService.Add(ud)
 		if err != nil {
 			out = output{err, http.StatusInternalServerError}
-			out.into(r, w)
 			return
 		}
 
+		// response
 		resp := response{
 			ID:       newid,
 			Username: ud.Username,
 		}
 
 		out = output{resp, http.StatusOK}
-		out.into(r, w)
 	}
 
 }

@@ -61,8 +61,10 @@ func main() {
 	go func() {
 		quit := make(chan os.Signal, 1)
 		signal.Notify(quit, os.Interrupt)
+
 		// wait here for interruption
 		<-quit
+
 		atomic.StoreInt32(&serverHealth, 0)
 
 		// exit event occured so create context from Shutdown
