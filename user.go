@@ -1,7 +1,8 @@
 package dots
 
 type UserService interface {
-	Add(User) error
+	Add(User) (int, error)
+	FindByUsername(string) (*User, error)
 }
 
 type User struct {

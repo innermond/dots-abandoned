@@ -7,7 +7,6 @@ import (
 
 	"github.com/innermond/dots"
 	"github.com/innermond/dots/service"
-	"github.com/innermond/dots/store/mysql"
 )
 
 type server struct {
@@ -16,7 +15,7 @@ type server struct {
 	db *sql.DB
 }
 
-func (s *server) handleHealthGet() http.HandlerFunc {
+func (s *server) checkHealth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -25,15 +24,14 @@ func (s *server) handleHealthGet() http.HandlerFunc {
 	}
 }
 
-func (s *server) handleUserPost() http.HandlerFunc {
+func (s *server) userPost() http.HandlerFunc {
 
 	type response struct {
 		ID       int    `json:"id"`
 		Username string `json:"username"`
 	}
 
-	userStore := mysql.NewUser(s.db)
-	userService := service.NewUser(userStore)
+	userService := service.User(s.db)
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
@@ -59,6 +57,49 @@ func (s *server) handleUserPost() http.HandlerFunc {
 		// response
 		resp := response{
 			ID:       newid,
+			Username: ud.Username,
+		}
+
+		out = output{resp, http.StatusOK}
+	}
+
+}
+
+func (s *server) login() http.HandlerFunc {
+
+	type response struct {
+		ID       int    `json:"id"`
+		Username string `json:"username"`
+	}
+
+	userService := service.User(s.db)
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		// out is the response
+		var out output
+		defer out.into(r, w)
+
+		// input data to app data (json to struct)
+		ud := &dots.User{}
+		err := error(nil)
+
+		if err = json.NewDecoder(r.Body).Decode(ud); err != nil {
+			out = output{Payload: err, Code: http.StatusBadRequest}
+			return
+		}
+
+		// send app data to service layer
+		ud, err = userService.FindByUsername(ud.Username)
+		if err != nil {
+			out = output{err, http.StatusInternalServerError}
+			return
+		}
+
+		// response
+		resp := response{
+			ID:       ud.ID,
 			Username: ud.Username,
 		}
 

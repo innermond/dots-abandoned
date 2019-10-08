@@ -12,7 +12,8 @@ func (s *server) routes() {
 		log.Fatal("no expected router")
 	}
 	router.Route("/api/v1", func(x chi.Router) {
-		x.Post("/user", jzon(s.handleUserPost()))
-		x.Get("/health", jzon(s.handleHealthGet()))
+		x.Post("/login", jzon(s.login()))
+		x.Post("/user", jzon(s.userPost()))
+		x.Get("/health", jzon(s.checkHealth()))
 	})
 }

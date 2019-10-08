@@ -6,18 +6,29 @@ import (
 	"github.com/innermond/dots"
 )
 
-// User is an implementation of data.User
-type User struct {
+// implements dots.userService interface
+type userService struct {
 	db *sql.DB
 }
 
-// NewUser makes a new User
-func NewUser(db *sql.DB) *User {
-	return &User{db}
+func UserService(db *sql.DB) dots.UserService {
+	return &userService{db}
+}
+
+func (s *userService) Add(u dots.User) (int, error) {
+	qry := "insert into users (username, password) values(?, ? )"
+	db := s.db
+
+	res, err := db.Exec(qry, u.Username, u.Password)
+	if err != nil {
+		return 0, err
+	}
+	id, err := res.LastInsertId()
+	return int(id), err
 }
 
 // FindAll gets all users
-func (s *User) FindAll() ([]dots.User, error) {
+func (s *userService) FindAll() ([]dots.User, error) {
 	qry := "select id, username, password from users"
 	db := s.db
 
@@ -43,7 +54,7 @@ func (s *User) FindAll() ([]dots.User, error) {
 }
 
 // FindByUsername return one dot.User
-func (s *User) FindByUsername(uname string) (*dots.User, error) {
+func (s *userService) FindByUsername(uname string) (*dots.User, error) {
 	qry := "select id, username, password from users where username = ?  limit 1"
 	db := s.db
 
@@ -57,16 +68,4 @@ func (s *User) FindByUsername(uname string) (*dots.User, error) {
 		return nil, err
 	}
 	return u, nil
-}
-
-// Add inserts user
-func (s *User) Add(u dots.User) (int64, error) {
-	qry := "insert into users (username, password) values(?, ? )"
-	db := s.db
-
-	res, err := db.Exec(qry, u.Username, u.Password)
-	if err != nil {
-		return 0, err
-	}
-	return res.LastInsertId()
 }
