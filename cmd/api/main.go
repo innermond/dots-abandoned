@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -19,9 +20,19 @@ import (
 var serverHealth int32
 
 func main() {
+	var (
+		dsn string
+		db  *sql.DB
+		err error
+	)
+
+	dsn, err = env("DOTS_DSN", "")
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	// mysql database
-	dsn := "root:M0b1d1c3@/printoo"
-	db, err := sql.Open("mysql", dsn)
+	db, err = sql.Open("mysql", dsn)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -94,4 +105,16 @@ func main() {
 	<-done
 	log.Println("Server stopped")
 
+}
+
+func env(key, alternative string) (string, error) {
+	var err = fmt.Errorf("%s not found", key)
+	val, found := os.LookupEnv(key)
+	if !found {
+		if alternative != "" {
+			return alternative, nil
+		}
+		return "", err
+	}
+	return val, nil
 }
