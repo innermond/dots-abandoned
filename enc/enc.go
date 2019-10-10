@@ -28,10 +28,6 @@ func HashIsPassword(hashed string, pwd string) error {
 }
 
 // RandKey return a uuid string
-func RandKey() (string, error) {
-	apikey, err := uuid.NewV4()
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%s", apikey), nil
+func RandKey() string {
+	return fmt.Sprintf("%s", uuid.NewV4())
 }

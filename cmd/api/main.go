@@ -3,11 +3,14 @@ package main
 import (
 	"context"
 	"database/sql"
+	"flag"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"sync/atomic"
 	"time"
 
@@ -21,12 +24,29 @@ var serverHealth int32
 
 func main() {
 	var (
-		dsn string
+		debug bool
+
+		host, port, dsn string
+
 		db  *sql.DB
 		err error
 	)
 
-	dsn, err = env("DOTS_DSN", "")
+	flag.BoolVar(&debug, "debug", false, "activate debug")
+	flag.StringVar(&host, "h", "", "host address")
+	flag.StringVar(&port, "p", "2000", "port part of server's address")
+	flag.StringVar(&dsn, "dsn", "", "database DSN string")
+	flag.Parse()
+
+	host = strings.TrimRight(host, ":")
+	if host != "" {
+		host, port, err = net.SplitHostPort(host)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	dsn, err = env("DOTS_DSN", dsn)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -52,8 +72,10 @@ func main() {
 
 	s := &server{
 		Server: &http.Server{
-			Addr:              ":2000",
-			Handler:           r,
+			Addr:        host + ":" + port,
+			Handler:     r,
+			ReadTimeout: time.Second * 10,
+			//WriteTimeout:      time.Second * 10,
 			ReadHeaderTimeout: time.Second * 5,
 			IdleTimeout:       time.Second * 30,
 		},
@@ -61,10 +83,6 @@ func main() {
 	}
 
 	s.routes()
-
-	s.RegisterOnShutdown(func() {
-		log.Println("Server is cold")
-	})
 
 	done := make(chan bool)
 
@@ -94,7 +112,7 @@ func main() {
 	}()
 
 	// working
-	log.Printf("server started on %s\n", s.Addr)
+	log.Printf("server started on %s; debug mode %v\n", s.Addr, debug)
 	atomic.StoreInt32(&serverHealth, 1)
 	// blocks & servs
 	if err := s.ListenAndServeTLS("./server.crt", "./server.key"); err != http.ErrServerClosed {
