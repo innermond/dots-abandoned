@@ -15,10 +15,13 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/innermond/dots/enc/branca"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 )
+
+const API_PATH = "/api/v1"
 
 var serverHealth int32
 
@@ -26,7 +29,7 @@ func main() {
 	var (
 		debug bool
 
-		host, port, dsn string
+		host, port, dsn, tokenKey string
 
 		db  *sql.DB
 		err error
@@ -36,6 +39,7 @@ func main() {
 	flag.StringVar(&host, "h", "", "host address")
 	flag.StringVar(&port, "p", "2000", "port part of server's address")
 	flag.StringVar(&dsn, "dsn", "", "database DSN string")
+	flag.StringVar(&tokenKey, "tokenKey", strings.Repeat("x", 32), "key used tokens encryption")
 	flag.Parse()
 
 	host = strings.TrimRight(host, ":")
@@ -63,6 +67,8 @@ func main() {
 	}
 	defer db.Close()
 
+	auth := branca.NewEncrypt(tokenKey, time.Second*10)
+
 	r := chi.NewRouter()
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
@@ -79,7 +85,8 @@ func main() {
 			ReadHeaderTimeout: time.Second * 5,
 			IdleTimeout:       time.Second * 30,
 		},
-		db: db,
+		db:        db,
+		tokenizer: auth,
 	}
 
 	s.routes()

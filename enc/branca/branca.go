@@ -1,6 +1,8 @@
 package branca
 
 import (
+	"time"
+
 	"github.com/hako/branca"
 	"github.com/innermond/dots/enc"
 )
@@ -19,8 +21,8 @@ func (e *Encrypt) Decode(str string) (string, error) {
 }
 
 // NewEncrypt adapts branca to Tokenizer interface
-func NewEncrypt(bkey []byte, ttl uint32) enc.Tokenizer {
-	bk := branca.NewBranca(string(bkey))
-	bk.SetTTL(ttl)
+func NewEncrypt(key string, ttl time.Duration) enc.Tokenizer {
+	bk := branca.NewBranca(key)
+	bk.SetTTL(uint32(ttl))
 	return &Encrypt{b: bk}
 }

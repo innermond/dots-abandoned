@@ -2,8 +2,10 @@ package mysql
 
 import (
 	"database/sql"
+	"strconv"
 
 	"github.com/innermond/dots"
+	"github.com/innermond/dots/enc"
 )
 
 // implements dots.userService interface
@@ -12,6 +14,12 @@ type userService struct {
 }
 
 func UserService(db *sql.DB) dots.UserService {
+	return &userService{db}
+}
+
+type UserStore = userService
+
+func User(db *sql.DB) *UserStore {
 	return &userService{db}
 }
 
@@ -68,4 +76,27 @@ func (s *userService) FindByUsername(uname string) (*dots.User, error) {
 		return nil, err
 	}
 	return u, nil
+}
+
+// Login logins a dot.User
+func (s *userService) Login(uname, pwd string, tokenizer enc.Tokenizer) (token string, err error) {
+
+	var u = new(dots.User)
+
+	u, err = s.FindByUsername(uname)
+	if err != nil {
+		return
+	}
+
+	err = enc.HashIsPassword(u.Password, pwd)
+	if err != nil {
+		return
+	}
+
+	token, err = tokenizer.Encode(strconv.Itoa(u.ID))
+	if err != nil {
+		return
+	}
+
+	return
 }
