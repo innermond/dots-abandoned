@@ -24,10 +24,14 @@ func User(db *sql.DB) *UserStore {
 }
 
 func (s *userService) Add(u dots.User) (int, error) {
+	encrypted, err := enc.Password(u.Password)
+	if err != nil {
+		return 0, err
+	}
 	qry := "insert into users (username, password) values(?, ? )"
 	db := s.db
 
-	res, err := db.Exec(qry, u.Username, u.Password)
+	res, err := db.Exec(qry, u.Username, encrypted)
 	if err != nil {
 		return 0, err
 	}

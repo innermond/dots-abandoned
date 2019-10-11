@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/innermond/dots"
 	"github.com/innermond/dots/enc"
@@ -22,8 +25,7 @@ func (s *server) checkHealth() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
-		out := output{Payload: serverHealth, Code: http.StatusOK}
-		out.into(r, w)
+		out(serverHealth, http.StatusOK).into(r, w)
 	}
 }
 
@@ -44,14 +46,14 @@ func (s *server) userPost() http.HandlerFunc {
 		defer out.into(r, w)
 
 		// input data to app data (json to struct)
-		var ud inputUserAutomodifying
+		var ud dots.User
 		if err := json.NewDecoder(r.Body).Decode(&ud); err != nil {
 			out = output{Payload: err, Code: http.StatusBadRequest}
 			return
 		}
 
 		// send app data to service layer
-		newid, err := userService.Add(dots.User(ud))
+		newid, err := userService.Add(ud)
 		if err != nil {
 			out = output{err, http.StatusInternalServerError}
 			return
@@ -107,27 +109,70 @@ func (s *server) login() http.HandlerFunc {
 
 		// response
 		resp := token{Token: tk}
-
 		out = output{resp, http.StatusOK}
 	}
 
 }
 
-//TODO password encrypting belongs to service layer
-type inputUserAutomodifying dots.User
+type (
+	nextler func(http.Handler) http.Handler
+)
 
-func (u *inputUserAutomodifying) UnmarshalJSON(data []byte) error {
-	var err error
+var ctxKeyToken = ctxkey("token")
 
-	type input inputUserAutomodifying
-	out := (*input)(u)
+func (s *server) guard() nextler {
 
-	if err = json.Unmarshal(data, out); err != nil {
-		return err
+	var errEmptyToken = errors.New("empty token")
+
+	return func(next http.Handler) http.Handler {
+		fn := func(w http.ResponseWriter, r *http.Request) {
+
+			tok, err := decodeToken(r, s.tokenizer)
+			switch {
+			case
+				// token empty
+				tok == "" && err == nil:
+				out(errEmptyToken.Error(), http.StatusUnauthorized).into(r, w)
+				return
+			case err != nil:
+				out(err, http.StatusBadRequest).into(r, w)
+				return
+			}
+
+			ctx := r.Context()
+			ctx = context.WithValue(ctx, ctxKeyToken, tok)
+
+			next.ServeHTTP(w, r)
+		}
+		return http.Handler(http.HandlerFunc(fn))
 	}
-	out.Password, err = enc.Password(u.Password)
+}
+
+// decodeToken verify if token is ok
+func decodeToken(r *http.Request, tokenizer enc.Tokenizer) (string, error) {
+	enctok, err := authorization(r)
+	// there is no token case
+	if err == nil && enctok == "" {
+		return "", nil
+	}
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return tokenizer.Decode(enctok)
+}
+
+// authorization gets Authorization: Bearer <value>
+func authorization(r *http.Request) (string, error) {
+	ah := r.Header.Get("Authorization")
+	// no token
+	if ah == "" {
+		return "", nil
+	}
+	// parts
+	pp := strings.SplitN(ah, " ", 2)
+	if len(pp) != 2 || strings.ToLower(pp[0]) != "bearer" {
+		return "", errors.New("malformed authorization header")
+	}
+
+	return pp[1], nil
 }

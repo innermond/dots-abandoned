@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-func jzon(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
+func jzon(next http.Handler) http.Handler {
+	fn := func(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		ctx := context.WithValue(
@@ -30,4 +30,6 @@ func jzon(next http.HandlerFunc) http.HandlerFunc {
 		w.WriteHeader(out.Code)
 		enc.Encode(out)
 	}
+
+	return http.Handler(http.HandlerFunc(fn))
 }

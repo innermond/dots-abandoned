@@ -11,9 +11,13 @@ func (s *server) routes() {
 	if !ok {
 		log.Fatal("no expected router")
 	}
+
+	auth := s.guard()
+
 	router.Route(API_PATH, func(x chi.Router) {
-		x.Post("/login", jzon(s.login()))
-		x.Post("/user", jzon(s.userPost()))
-		x.Get("/health", jzon(s.checkHealth()))
+		x.Use(jzon)
+		x.Post("/login", s.login())
+		x.With(auth).Post("/user", s.userPost())
+		x.Get("/health", s.checkHealth())
 	})
 }

@@ -25,6 +25,17 @@ func (outval *output) into(r *http.Request, w http.ResponseWriter) {
 		return
 	}
 
-	*out = *outval
+	if outval.empty() {
+		outval.Code = http.StatusNoContent
+	}
 
+	*out = *outval
+}
+
+func (outval *output) empty() bool {
+	return outval.Code == 0 && outval.Payload == nil
+}
+
+func out(msg interface{}, code int) *output {
+	return &output{msg, code}
 }
