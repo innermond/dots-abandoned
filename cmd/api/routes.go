@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/go-chi/chi"
+	"github.com/innermond/dots/env"
 )
 
 func (s *server) routes() {
@@ -14,7 +15,7 @@ func (s *server) routes() {
 
 	auth := s.guard()
 
-	router.Route(API_PATH, func(x chi.Router) {
+	router.Route(env.API_PATH, func(x chi.Router) {
 		x.Use(jzon)
 		x.Post("/login", s.login())
 		x.With(auth).Post("/user", s.userPost())
