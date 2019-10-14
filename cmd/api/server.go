@@ -9,9 +9,9 @@ import (
 	"strings"
 
 	"github.com/innermond/dots"
+	"github.com/innermond/dots/app"
 	"github.com/innermond/dots/enc"
 	"github.com/innermond/dots/service"
-	store "github.com/innermond/dots/service/mysql"
 )
 
 type server struct {
@@ -73,15 +73,9 @@ func (s *server) userPost() http.HandlerFunc {
 func (s *server) login() http.HandlerFunc {
 
 	type response struct {
-		ID       int    `json:"id"`
 		Username string `json:"username"`
+		Token    string `json:"token"`
 	}
-
-	type token struct {
-		Token string `json:"token"`
-	}
-
-	userStore := store.User(s.db)
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
@@ -91,24 +85,63 @@ func (s *server) login() http.HandlerFunc {
 		defer out.into(r, w)
 
 		// input data to app data (json to struct)
-		ud := &dots.User{}
-		err := error(nil)
-
-		if err = json.NewDecoder(r.Body).Decode(ud); err != nil {
+		var ud dots.User
+		if err := json.NewDecoder(r.Body).Decode(&ud); err != nil {
 			out = output{Payload: err, Code: http.StatusBadRequest}
 			return
 		}
 
 		// send app data to service layer
-		var tk string
-		tk, err = userStore.Login(ud.Username, ud.Password, s.tokenizer)
+		tok, err := app.Login(ud.Username, ud.Password)
+		if err != nil {
+			out = output{err, http.StatusUnauthorized}
+			return
+		}
+
+		// response
+		resp := response{
+			Username: ud.Username,
+			Token:    tok,
+		}
+
+		out = output{resp, http.StatusOK}
+	}
+
+}
+
+func (s *server) register() http.HandlerFunc {
+
+	type response struct {
+		Username string `json:"username"`
+		Token    string `json:"token"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		// out is the response
+		var out output
+		defer out.into(r, w)
+
+		// input data to app data (json to struct)
+		ud := app.UserDataRegister{}
+		err := error(nil)
+		tk := ""
+
+		if err = json.NewDecoder(r.Body).Decode(&ud); err != nil {
+			out = output{Payload: err, Code: http.StatusBadRequest}
+			return
+		}
+
+		// send app data to service layer
+		tk, err = app.Register(ud)
 		if err != nil {
 			out = output{err, http.StatusInternalServerError}
 			return
 		}
 
 		// response
-		resp := token{Token: tk}
+		resp := response{Username: ud.Username, Token: tk}
 		out = output{resp, http.StatusOK}
 	}
 

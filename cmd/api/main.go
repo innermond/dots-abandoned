@@ -10,40 +10,27 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/innermond/dots/enc/branca"
+	"github.com/innermond/dots/app"
 	"github.com/innermond/dots/env"
-
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
 )
 
 var serverHealth int32
 
 func main() {
-	tokenizer := branca.NewEncrypt(env.TokenKey(), time.Second*10)
-
-	r := chi.NewRouter()
-	r.Use(middleware.RequestID)
-	//r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(middleware.Timeout(60 * time.Second))
-
-	db := env.Db()
-	defer db.Close()
 
 	s := &server{
 		Server: &http.Server{
-			Addr:        env.Addr(),
-			Handler:     r,
+			Addr: env.Addr(),
+			//Handler:     r,
 			ReadTimeout: time.Second * 10,
 			//WriteTimeout:      time.Second * 10,
 			ReadHeaderTimeout: time.Second * 5,
 			IdleTimeout:       time.Second * 30,
 		},
-		db:        db,
-		tokenizer: tokenizer,
+		db:        app.Db(),
+		tokenizer: app.Tok(),
 	}
+	defer s.db.Close()
 
 	s.routes()
 

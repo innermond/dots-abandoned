@@ -1,7 +1,6 @@
 package env
 
 import (
-	"database/sql"
 	"errors"
 	"flag"
 	"fmt"
@@ -9,21 +8,8 @@ import (
 	"net"
 	"os"
 	"strings"
+	"sync"
 )
-
-const API_PATH = "/api/v1"
-
-func Get(key, alternative string) (string, error) {
-	err = fmt.Errorf("%s not found", key)
-	val, found := os.LookupEnv(key)
-	if !found {
-		if alternative != "" {
-			return alternative, nil
-		}
-		return "", err
-	}
-	return val, nil
-}
 
 var (
 	err                       error
@@ -31,11 +17,19 @@ var (
 	host, port, dsn, tokenKey string
 )
 
+var (
+	ErrDsnEmpty = errors.New("env: dsn not set")
+)
+
 func flagParse() error {
 	dsn, err = Get("DOTS_DSN", "")
-	if err != nil || dsn == "" {
-		return errors.New("dsn not received")
+	if err != nil {
+		return err
 	}
+	if dsn == "" {
+		return ErrDsnEmpty
+	}
+
 	flag.BoolVar(&debug, "debug", false, "activate debug")
 	flag.StringVar(&host, "h", "", "host address")
 	flag.StringVar(&port, "p", "2000", "port part of server's address")
@@ -53,37 +47,6 @@ func flagParse() error {
 	return nil
 }
 
-var db *sql.DB
-
-func database() error {
-	// mysql database
-	db, err = sql.Open("mysql", dsn)
-	if err != nil {
-		return err
-	}
-	if err = db.Ping(); err != nil {
-		return err
-	}
-	return nil
-}
-
-func init() {
-	log.Println("env.init start")
-	err = flagParse()
-	if err != nil {
-		log.Fatal(err)
-	}
-	err = database()
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("env.init done")
-}
-
-func Db() *sql.DB {
-	return db
-}
-
 func Addr() string {
 	return host + ":" + port
 }
@@ -94,4 +57,35 @@ func Debug() bool {
 
 func TokenKey() string {
 	return tokenKey
+}
+
+func Dsn() string {
+	return dsn
+}
+
+func Get(key, alternative string) (string, error) {
+	err = fmt.Errorf("%s not found", key)
+	val, found := os.LookupEnv(key)
+	if !found {
+		if alternative != "" {
+			return alternative, nil
+		}
+		return "", err
+	}
+	return val, nil
+}
+
+func run() {
+	log.Println("env.init start")
+	err = flagParse()
+	if err != nil {
+		log.Fatal(err)
+	}
+	log.Println("env.init done")
+}
+
+var once sync.Once
+
+func Init() {
+	once.Do(run)
 }
