@@ -10,3 +10,12 @@ type User struct {
 	Username string
 	Password string
 }
+
+type Role string
+
+const (
+	AnonymousRole  Role = "anonymous"
+	UserRole       Role = "user"
+	AdminRole      Role = "admin"
+	SuperAdminRole Role = "superadmin"
+)

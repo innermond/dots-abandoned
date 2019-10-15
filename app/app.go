@@ -11,36 +11,40 @@ import (
 	"github.com/innermond/dots/env"
 )
 
+type this struct {
+	db  *sql.DB
+	tok enc.Tokenizer
+}
+
+var app this
+
 var err error
 
 // dependencies initialized once when app is started
 // private variables that exists for the lifetime of application
-var db *sql.DB
 
 func database() error {
 	// mysql database
-	db, err = sql.Open("mysql", env.Dsn())
+	app.db, err = sql.Open("mysql", env.Dsn())
 	if err != nil {
 		return err
 	}
-	if err = db.Ping(); err != nil {
+	if err = app.db.Ping(); err != nil {
 		return err
 	}
 	return nil
 }
 
 func Db() *sql.DB {
-	return db
+	return app.db
 }
 
-var tok enc.Tokenizer
-
 func tokenizer() {
-	tok = branca.NewEncrypt(env.TokenKey(), time.Second*10)
+	app.tok = branca.NewEncrypt(env.TokenKey(), time.Second*10)
 }
 
 func Tok() enc.Tokenizer {
-	return tok
+	return app.tok
 }
 
 func run() {

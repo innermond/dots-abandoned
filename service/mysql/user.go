@@ -35,6 +35,48 @@ func (s *userService) Add(u dots.User) (int, error) {
 	return int(id), err
 }
 
+func (s *userService) Register(u dots.User, role dots.Role) (int, error) {
+	qryUser := "insert into users (username, password) values(?, ? )"
+	qryUserRole := "insert into user_roles (user_id, role_name) values(?, ? )"
+	db := s.db
+
+	tx, err := db.Begin()
+	if err != nil {
+		return 0, err
+	}
+	defer tx.Rollback()
+
+	stmUser, err := tx.Prepare(qryUser)
+	if err != nil {
+		return 0, err
+	}
+	defer stmUser.Close()
+
+	resUser, err := stmUser.Exec(u.Username, u.Password)
+	if err != nil {
+		return 0, err
+	}
+	uid, err := resUser.LastInsertId()
+
+	stmUserRole, err := tx.Prepare(qryUserRole)
+	if err != nil {
+		return 0, err
+	}
+	defer stmUserRole.Close()
+
+	_, err = stmUserRole.Exec(uid, role)
+	if err != nil {
+		return 0, err
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(uid), err
+}
+
 // FindAll gets all users
 func (s *userService) FindAll() ([]dots.User, error) {
 	qry := "select id, username, password from users"

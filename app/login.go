@@ -15,7 +15,7 @@ func Login(uname, pwd string) (token string, err error) {
 
 	var u = new(dots.User)
 
-	u, err = store.User(db).FindByUsername(uname)
+	u, err = store.User(app.db).FindByUsername(uname)
 	if err != nil {
 		return
 	}
@@ -25,7 +25,7 @@ func Login(uname, pwd string) (token string, err error) {
 		return
 	}
 
-	token, err = tok.Encode(strconv.Itoa(u.ID))
+	token, err = app.tok.Encode(strconv.Itoa(u.ID))
 	if err != nil {
 		return
 	}

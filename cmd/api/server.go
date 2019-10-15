@@ -124,7 +124,7 @@ func (s *server) register() http.HandlerFunc {
 		defer out.into(r, w)
 
 		// input data to app data (json to struct)
-		ud := app.UserDataRegister{}
+		ud := app.InputUserRegister{}
 		err := error(nil)
 		tk := ""
 
