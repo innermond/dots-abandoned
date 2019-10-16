@@ -32,6 +32,17 @@ func (op *userOp) Add(u dots.User) (int, error) {
 	return int(id), err
 }
 
+func (op *userOp) Delete(uid int) error {
+	qry := "delete from users where id = ? limit 1"
+	db := store.DB
+	err := error(nil)
+	_, err = db.Exec(qry, uid)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (op *userOp) Register(u dots.User, role dots.Role) (int, error) {
 	qryUser := "insert into users (username, password) values(?, ? )"
 	qryUserRole := "insert into user_roles (user_id, role_name) values(?, ? )"

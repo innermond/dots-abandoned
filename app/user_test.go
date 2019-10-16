@@ -1,4 +1,4 @@
-package store
+package app
 
 import (
 	"math/rand"
@@ -9,11 +9,12 @@ import (
 	"github.com/innermond/dots"
 	"github.com/innermond/dots/enc"
 	"github.com/innermond/dots/env"
+	"github.com/innermond/dots/store"
 )
 
 func init() {
 	env.Init()
-	Init()
+	store.Init()
 	enc.Init()
 }
 
@@ -26,18 +27,15 @@ func Test_AddUser(t *testing.T) {
 		{letters(8), letters(20)},
 		{letters(8), letters(40)},
 	}
-	db := store.DB
-	defer db.Close()
+	defer store.Close()
 	err := error(nil)
 
 	for _, tc := range tt {
 		ua := dots.User{Username: tc.usr, Password: tc.pwd}
-		plain := ua.Password
-		ua.Password, err = enc.Password(ua.Password)
 		if err != nil {
 			t.Fatal(err)
 		}
-		id, err := UserOp().Add(ua)
+		id, err := AddUser(ua)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -45,21 +43,18 @@ func Test_AddUser(t *testing.T) {
 		// assure test user is deleted as at this point is surely created
 		defer func(usr string) {
 			t.Logf("defer delete test user %s", usr)
-			_, err = db.Exec("delete from users where id = ? limit 1", id)
-			if err != nil {
-				t.Fatal(err)
-			}
+			store.UserOp().Delete(id)
 		}(tc.usr)
 
-		uz, err := UserOp().FindByUsername(tc.usr)
+		uz, err := store.UserOp().FindByUsername(tc.usr)
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = enc.HashIsPassword(uz.Password, plain)
+		err = enc.HashIsPassword(uz.Password, ua.Password)
 		if err != nil {
 			t.Fatal(err)
 		}
-		t.Logf("hash %s is password %s", uz.Password, plain)
+		t.Logf("hash %s is password %s", uz.Password, ua.Password)
 	}
 }
 
