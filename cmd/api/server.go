@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -11,13 +10,11 @@ import (
 	"github.com/innermond/dots"
 	"github.com/innermond/dots/app"
 	"github.com/innermond/dots/enc"
-	"github.com/innermond/dots/service"
 )
 
 type server struct {
 	*http.Server
 
-	db        *sql.DB
 	tokenizer enc.Tokenizer
 }
 
@@ -36,8 +33,6 @@ func (s *server) userPost() http.HandlerFunc {
 		Username string `json:"username"`
 	}
 
-	userService := service.User(s.db)
-
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
@@ -53,7 +48,7 @@ func (s *server) userPost() http.HandlerFunc {
 		}
 
 		// send app data to service layer
-		newid, err := userService.Add(ud)
+		newid, err := app.AddUser(ud)
 		if err != nil {
 			out = output{err, http.StatusInternalServerError}
 			return

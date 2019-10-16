@@ -10,8 +10,9 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/innermond/dots/app"
+	"github.com/innermond/dots/enc"
 	"github.com/innermond/dots/env"
+	"github.com/innermond/dots/store"
 )
 
 var serverHealth int32
@@ -27,10 +28,9 @@ func main() {
 			ReadHeaderTimeout: time.Second * 5,
 			IdleTimeout:       time.Second * 30,
 		},
-		db:        app.Db(),
-		tokenizer: app.Tok(),
+		tokenizer: enc.Tok(),
 	}
-	defer s.db.Close()
+	defer store.Close()
 
 	s.routes()
 

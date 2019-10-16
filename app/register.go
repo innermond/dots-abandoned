@@ -5,7 +5,7 @@ import (
 
 	"github.com/innermond/dots"
 	"github.com/innermond/dots/enc"
-	store "github.com/innermond/dots/service/mysql"
+	"github.com/innermond/dots/store"
 )
 
 type InputUserRegister struct {
@@ -13,7 +13,6 @@ type InputUserRegister struct {
 	Password string
 }
 
-// TODO when register store role
 func Register(ud InputUserRegister) (string, error) {
 	// verify UserData is valid
 
@@ -27,14 +26,14 @@ func Register(ud InputUserRegister) (string, error) {
 		Username: ud.Username,
 		Password: encrypted,
 	}
-	uid, err := store.User(app.db).Register(u, dots.UserRole)
+	uid, err := store.UserOp().Register(u, dots.UserRole)
 	if err != nil {
 		return "", err
 	}
 
 	// give a token
 	uidstr := strconv.Itoa(uid)
-	tok, err := app.tok.Encode(uidstr)
+	tok, err := enc.Tok().Encode(uidstr)
 	if err != nil {
 		return "", err
 	}

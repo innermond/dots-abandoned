@@ -5,7 +5,7 @@ import (
 
 	"github.com/innermond/dots"
 	"github.com/innermond/dots/enc"
-	store "github.com/innermond/dots/service/mysql"
+	"github.com/innermond/dots/store"
 )
 
 // Login logins a dot.User
@@ -15,7 +15,7 @@ func Login(uname, pwd string) (token string, err error) {
 
 	var u = new(dots.User)
 
-	u, err = store.User(app.db).FindByUsername(uname)
+	u, err = store.UserOp().FindByUsername(uname)
 	if err != nil {
 		return
 	}
@@ -25,7 +25,7 @@ func Login(uname, pwd string) (token string, err error) {
 		return
 	}
 
-	token, err = app.tok.Encode(strconv.Itoa(u.ID))
+	token, err = enc.Tok().Encode(strconv.Itoa(u.ID))
 	if err != nil {
 		return
 	}
