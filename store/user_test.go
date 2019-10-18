@@ -1,37 +1,34 @@
-package app
+package store
 
 import (
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/innermond/dots"
-	"github.com/innermond/dots/enc"
 	"github.com/innermond/dots/env"
-	"github.com/innermond/dots/store"
 	"github.com/innermond/dots/testdata"
 )
 
 func init() {
 	env.Init()
-	store.Init()
-	enc.Init()
+	Init()
 }
 
-func Test_AddUser(t *testing.T) {
-	defer store.Close()
+func Test_User(t *testing.T) {
+	defer Close()
 	err := error(nil)
+	op := UserOp()
 
 	for _, tc := range testdata.UserPassword {
 		ua := dots.User{Username: tc.Usr, Password: tc.Pwd}
 		if err != nil {
 			t.Fatal(err)
 		}
-		id, err := AddUser(ua)
+		id, err := op.Add(ua)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		op := store.UserOp()
 		// assure test user is deleted as at this point is surely created
 		defer func(usr string) {
 			t.Logf("defer delete test user %s", usr)
@@ -42,15 +39,8 @@ func Test_AddUser(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = enc.HashIsPassword(uz.Password, ua.Password)
-		if err != nil {
-			t.Errorf("hash %s is not password %s", uz.Password, ua.Password)
+		if uz.Password != ua.Password {
+			t.Errorf("password is not hashed at store operation level: hash %s password %s", uz.Password, ua.Password)
 		}
 	}
-}
-
-func Test_LoginUser(t *testing.T) {
-	//tokenKey := strings.Repeat("x", 32)
-	//tokenizer := branca.NewEncrypt(tokenKey, time.Second*10)
-	t.Skip()
 }
