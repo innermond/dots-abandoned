@@ -1,12 +1,15 @@
 package testdata
 
-import "github.com/innermond/dots/rand"
-
-var UserPassword = []struct {
+type UserData struct {
 	Usr string
 	Pwd string
-}{
-	{rand.Letters(6), rand.Letters(10)},
-	{rand.Letters(8), rand.Letters(20)},
-	{rand.Letters(8), rand.Letters(30)},
+}
+
+var UserPassword = []UserData{
+	{"gbbg1_2434", "a!sa_Ar3tQ"},
+	{"ghgdh23_34", "%ZEP_a!sOP1"},
+}
+
+var UserInvalid = []UserData{
+	{"short", "qqqq"},
 }

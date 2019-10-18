@@ -9,6 +9,7 @@ import (
 )
 
 // letters printable ascii string; lower letters
+// TODO test it as it appears to output strange doubled length strings
 func Letters(n int) string {
 	x := rand.New(rand.NewSource(time.Now().UnixNano()))
 	out := make([]byte, n)
