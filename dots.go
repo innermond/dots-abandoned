@@ -19,3 +19,23 @@ const (
 	AdminRole      Role = "admin"
 	SuperAdminRole Role = "superadmin"
 )
+
+type Company struct {
+	Longname string
+	TIN      string
+	RN       string
+}
+
+type Address struct {
+	Address  string
+	Location Point
+}
+
+type Point struct {
+	X, Y float64
+}
+
+type Iban struct {
+	Iban     string
+	Bankname string
+}

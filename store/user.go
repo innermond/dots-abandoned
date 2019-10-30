@@ -2,7 +2,9 @@ package store
 
 import (
 	"database/sql"
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/innermond/dots"
 	"github.com/innermond/dots/enc"
@@ -43,6 +45,29 @@ func (op *userOp) Delete(uid int) error {
 	return nil
 }
 
+func (op *userOp) Unrole(uid int, role []dots.Role) error {
+	var qry string
+	lenrole := len(role)
+	if lenrole == 1 {
+		qry = "delete from user_roles where user_id = ? and role_name = ? limit 1"
+	} else {
+		in := strings.Repeat(",?", lenrole)[1:]
+		qry = fmt.Sprintf("delete from user_roles where user_id = ? and role_name in(%s)", in)
+	}
+	db := store.DB
+	err := error(nil)
+	var args []interface{}
+	args = append(args, uid)
+	for _, rol := range role {
+		args = append(args, interface{}(rol))
+	}
+	_, err = db.Exec(qry, args...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (op *userOp) Register(u dots.User, role dots.Role) (int, error) {
 	qryUser := "insert into users (username, password) values(?, ? )"
 	qryUserRole := "insert into user_roles (user_id, role_name) values(?, ? )"
@@ -54,25 +79,13 @@ func (op *userOp) Register(u dots.User, role dots.Role) (int, error) {
 	}
 	defer tx.Rollback()
 
-	stmUser, err := tx.Prepare(qryUser)
-	if err != nil {
-		return 0, err
-	}
-	defer stmUser.Close()
-
-	resUser, err := stmUser.Exec(u.Username, u.Password)
+	resUser, err := tx.Exec(qryUser, u.Username, u.Password)
 	if err != nil {
 		return 0, err
 	}
 	uid, err := resUser.LastInsertId()
 
-	stmUserRole, err := tx.Prepare(qryUserRole)
-	if err != nil {
-		return 0, err
-	}
-	defer stmUserRole.Close()
-
-	_, err = stmUserRole.Exec(uid, role)
+	_, err = tx.Exec(qryUserRole, uid, role)
 	if err != nil {
 		return 0, err
 	}

@@ -15,7 +15,10 @@ type InputUserRegister struct {
 
 func Register(ud InputUserRegister) (string, error) {
 	// verify UserData is valid
-
+	err := validUser(ud)
+	if err != nil {
+		return "", err
+	}
 	// store UserData
 	encrypted, err := enc.Password(ud.Password)
 	if err != nil {
