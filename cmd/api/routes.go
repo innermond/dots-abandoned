@@ -24,6 +24,7 @@ func (s *server) routes() {
 		x.Post("/login", s.login())
 		x.Post("/register", s.register())
 		x.With(auth).Post("/user", s.userPost())
+		x.Post("/company", s.companyRegister())
 		x.Get("/health", s.checkHealth())
 	})
 

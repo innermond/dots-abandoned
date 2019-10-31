@@ -142,6 +142,41 @@ func (s *server) register() http.HandlerFunc {
 
 }
 
+func (s *server) companyRegister() http.HandlerFunc {
+
+	type response struct {
+		CompanyID int `json:"company_id"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		defer r.Body.Close()
+
+		// out is the response
+		var out output
+		defer out.into(r, w)
+
+		// input data to app data (json to struct)
+		cd := app.InputCompanyRegister{}
+		err := error(nil)
+
+		if err = json.NewDecoder(r.Body).Decode(&cd); err != nil {
+			out = output{Payload: err, Code: http.StatusBadRequest}
+			return
+		}
+
+		// send app data to service layer
+		id, err := app.RegisterCompany(cd)
+		if err != nil {
+			out = output{err.Error(), http.StatusInternalServerError}
+			return
+		}
+
+		// response
+		resp := response{CompanyID: id}
+		out = output{resp, http.StatusOK}
+	}
+}
+
 type (
 	nextler func(http.Handler) http.Handler
 )

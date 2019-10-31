@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"regexp"
 	"unicode"
+
+	"github.com/almerlucke/go-iban/iban"
+	"github.com/innermond/dots"
 )
 
 func validUser(u InputUserRegister) error {
@@ -55,4 +58,78 @@ func validUser(u InputUserRegister) error {
 		return errors.New("too repetitiv; at least 4 characters mus be uniques")
 	}
 	return nil
+}
+
+func validCompanyRegister(cd InputCompanyRegister) error {
+	var err error
+	if err = validCompany(cd.Company); err != nil {
+		return err
+	}
+
+	for _, a := range cd.Addresses {
+		if err = validAddress(a); err != nil {
+			return err
+		}
+	}
+
+	for _, b := range cd.Ibans {
+		if err = validIban(b); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func validCompany(c dots.Company) error {
+	var err error
+	err = between("longname", c.Longname, 4, 50)
+	if err != nil {
+		return err
+	}
+	err = between("tin", c.TIN, 4, 30)
+	if err != nil {
+		return err
+	}
+	err = between("rn", c.RN, 4, 30)
+	if err != nil {
+		return err
+	}
+	// printable chars
+	ss := []string{c.Longname, c.TIN, c.RN}
+	for _, s := range ss {
+		if !isPrintable(s) {
+			return fmt.Errorf("%s contains invalid characters", s)
+		}
+	}
+	return nil
+}
+
+func validAddress(a dots.Address) error {
+	return nil
+}
+
+func validIban(b dots.Iban) error {
+	_, err := iban.NewIBAN(b.Iban)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func between(name, s string, a, z int) error {
+	lens := len(s)
+	if false == (a <= lens && lens <= z) {
+		return fmt.Errorf("%s length %d between %d and %d", name, lens, a, z)
+	}
+	return nil
+}
+
+func isPrintable(s string) bool {
+	for _, c := range s {
+		if !unicode.IsPrint(c) {
+			return false
+		}
+	}
+	return true
 }

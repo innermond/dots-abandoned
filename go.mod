@@ -3,6 +3,7 @@ module github.com/innermond/dots
 go 1.12
 
 require (
+	github.com/almerlucke/go-iban v0.0.0-20170112082528-316a6e2335b3
 	github.com/eknkc/basex v1.0.0 // indirect
 	github.com/go-chi/chi v4.0.2+incompatible
 	github.com/go-sql-driver/mysql v1.4.1
