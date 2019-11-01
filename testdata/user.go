@@ -2,21 +2,17 @@ package testdata
 
 import "github.com/innermond/dots"
 
-type CompanyRegister struct {
-	Company   dots.Company
-	Addresses []dots.Address
-	Ibans     []dots.Iban
+type UserData struct {
+	Usr  string
+	Pwd  string
+	Role dots.Role
 }
 
-var CompanyRegisterValid = []CompanyRegister{
-	{
-		dots.Company{"Acme sa", "asdasdasertt", "fsfiu/dsd"},
-		[]dots.Address{{"address", dots.Point{178.0546, 74.23158}}},
-		[]dots.Iban{{"234233243iban", "bank of some"}},
-	},
-	{
-		dots.Company{"Acme  ONE sa", "sasa 34 Europe asdasdasertt", "r158fsfiu/dsd"},
-		[]dots.Address{{"address as text", dots.Point{18.0546, -74.23158}}},
-		[]dots.Iban{{"234232a33243iban", "bank of xsome"}},
-	},
+var UserPassword = []UserData{
+	{"gbbg1_2434", "a!sa_Ar3tQ", dots.UserRole},
+	{"ghgdh23_34", "%ZEP_a!sOP1", dots.AdminRole},
+}
+
+var UserInvalid = []UserData{
+	{"short", "qqqq", dots.AnonymousRole},
 }
