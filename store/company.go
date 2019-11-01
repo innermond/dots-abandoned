@@ -30,6 +30,18 @@ func (op *companyOp) Add(c dots.Company) (int, error) {
 	return int(id), err
 }
 
+func (op *companyOp) Modify(c dots.Company) error {
+	qry := "update companies set longname=?, tin=?, rn=? where id=?"
+	db := store.DB
+
+	_, err := db.Exec(qry, c.Longname, c.TIN, c.RN, c.ID)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (op *companyOp) Delete(cid int) error {
 	qry := "delete from companies where id = ? limit 1"
 	db := store.DB

@@ -21,6 +21,7 @@ const (
 )
 
 type Company struct {
+	ID       int
 	Longname string
 	TIN      string
 	RN       string
