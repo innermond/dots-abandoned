@@ -28,6 +28,7 @@ type Company struct {
 }
 
 type Address struct {
+	ID       int
 	Address  string
 	Location Point
 }

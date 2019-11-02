@@ -20,7 +20,11 @@ func Close() {
 
 func database() error {
 	// mysql database
-	db, err := sql.Open("mysql", env.Dsn())
+	dbtype, err := env.Get("DOTS_DB", "")
+	if err != nil {
+		return err
+	}
+	db, err := sql.Open(dbtype, env.Dsn())
 	if err != nil {
 		return err
 	}

@@ -22,3 +22,8 @@ var CompanyRegisterValid = []CompanyRegister{
 		[]dots.Iban{{Iban: "RO20RZBR0000060002651722", Bankname: "bank of xsome"}},
 	},
 }
+
+var AddressValid = [][]dots.Address{
+	[]dots.Address{{Address: "asasai sdsds  76dsds", Location: dots.Point{X: 45, Y: 45}}},
+	[]dots.Address{{Address: "opyuiyu\n ssdsdsdd 9898", Location: dots.Point{X: -179, Y: 19.254}}},
+}

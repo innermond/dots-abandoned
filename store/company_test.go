@@ -33,6 +33,7 @@ func Test_CompanyModify(t *testing.T) {
 			t.Fatal(err)
 		}
 		tc.Company.ID = id
+		tc.Company.Longname += "modified"
 		err = op.Modify(tc.Company)
 		if err != nil {
 			t.Fatal(err)

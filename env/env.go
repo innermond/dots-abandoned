@@ -64,13 +64,12 @@ func Dsn() string {
 }
 
 func Get(key, alternative string) (string, error) {
-	err = fmt.Errorf("%s not found", key)
 	val, found := os.LookupEnv(key)
 	if !found {
 		if alternative != "" {
 			return alternative, nil
 		}
-		return "", err
+		return "", fmt.Errorf("%q not found", key)
 	}
 	return val, nil
 }
