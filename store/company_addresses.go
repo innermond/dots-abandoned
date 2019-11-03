@@ -7,7 +7,7 @@ import (
 	"github.com/innermond/dots"
 )
 
-func (op *companyOp) AddressAdd(cid int, addresses []dots.Address) ([]int, error) {
+func (op *companyOp) AddressesAdd(cid int, addresses []dots.Address) ([]int, error) {
 	qry := "insert into company_addresses (company_id, address, location) values(?, ?, ST_SRID(Point(?, ?), 4326))"
 	db := store.DB
 
@@ -60,7 +60,7 @@ func (op *companyOp) AddressesDelete(cid int, ids []int) error {
 }
 
 func (op *companyOp) AddressModify(cid int, addr dots.Address) error {
-	qry := "update company_addresses set address=?, location=ST_SRID(Point(?, ?), 4326) where company_id=? and id=?"
+	qry := "update company_addresses set address=?, location=ST_SRID(Point(?, ?), 4326) where company_id=? and id=? limit 1"
 	db := store.DB
 
 	_, err := db.Exec(qry, addr.Address, addr.Location.X, addr.Location.Y, cid, addr.ID)

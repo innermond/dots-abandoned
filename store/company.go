@@ -56,7 +56,7 @@ func (op *companyOp) Delete(cid int) error {
 func (op *companyOp) Register(c dots.Company, addrr []dots.Address, ibans []dots.Iban) (int, error) {
 	qryCompany := "insert into companies (longname, tin, rn) values(?, ?, ?)"
 	qryAddresses := "insert into company_addresses (company_id, address, location) values"
-	qryIbans := "insert into ibans (company_id, iban, bankname) values"
+	qryIbans := "insert into company_ibans (company_id, iban, bankname) values"
 	db := store.DB
 
 	tx, err := db.Begin()

@@ -6,7 +6,8 @@ import (
 	"github.com/innermond/dots/testdata"
 )
 
-func Test_AddressesAdd(t *testing.T) {
+func Test_IbansAdd(t *testing.T) {
+
 	op := CompanyOp()
 
 	company := testdata.CompanyRegisterValid[0].Company
@@ -15,14 +16,14 @@ func Test_AddressesAdd(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	for _, tc := range testdata.AddressValid {
-		ids, err := op.AddressesAdd(cid, tc)
+	for _, tc := range testdata.CompanyRegisterValid {
+		ids, err := op.IbansAdd(cid, tc.Ibans)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		t.Logf("delete test addresses %v", ids)
-		op.AddressesDelete(cid, ids)
+		t.Logf("delete test ibans %v", ids)
+		op.IbansDelete(cid, ids)
 	}
 
 	// delete company will trigger addresses delete
@@ -33,7 +34,8 @@ func Test_AddressesAdd(t *testing.T) {
 	}(company.Longname)
 }
 
-func Test_AddressModify(t *testing.T) {
+func Test_IbanModify(t *testing.T) {
+
 	op := CompanyOp()
 
 	company := testdata.CompanyRegisterValid[0].Company
@@ -48,21 +50,21 @@ func Test_AddressModify(t *testing.T) {
 	}(company.Longname)
 
 	func() {
-		for _, tc := range testdata.AddressValid {
-			ids, err := op.AddressesAdd(cid, tc)
+		for _, tc := range testdata.CompanyRegisterValid {
+			ids, err := op.IbansAdd(cid, tc.Ibans)
 			if err != nil {
 				t.Fatal(err)
 			}
 
 			defer func() {
-				t.Logf("delete test addresses %v", ids)
+				t.Logf("delete test ibans %v", ids)
 				op.AddressesDelete(cid, ids)
 			}()
 
 			// assume range returns same order as ids
-			for i, addr := range tc {
-				addr.ID = ids[i]
-				err = op.AddressModify(cid, addr)
+			for i, iban := range tc.Ibans {
+				iban.ID = ids[i]
+				err = op.IbanModify(cid, iban)
 				if err != nil {
 					t.Fatal(err)
 				}
