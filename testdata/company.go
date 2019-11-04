@@ -12,12 +12,12 @@ type CompanyRegister struct {
 
 var CompanyRegisterValid = []CompanyRegister{
 	{
-		dots.Company{Longname: "Acme sa", TIN: "asdasdasertt", RN: "fsfiu/dsd"},
+		dots.Company{Longname: "Acme sa", TIN: "asdasdasertt", RN: "fsfiu/dsd", IsClient: true, IsContractor: false},
 		[]dots.Address{{Address: "address", Location: dots.Point{X: 178.0546, Y: 74.23158}}},
 		[]dots.Iban{{Iban: "RO57PORL0000250010000101", Bankname: "bank of some"}},
 	},
 	{
-		dots.Company{Longname: "Acme  ONE sa", TIN: "sasa 34 Europe asdasdasertt", RN: "r158fsfiu/dsd"},
+		dots.Company{Longname: "Acme  ONE sa", TIN: "sasa 34 Europe asdasdasertt", RN: "r158fsfiu/dsd", IsClient: false, IsContractor: true},
 		[]dots.Address{{Address: "address as text", Location: dots.Point{X: 18.0546, Y: -74.23158}}},
 		[]dots.Iban{{Iban: "RO20RZBR0000060002651722", Bankname: "bank of xsome"}},
 	},

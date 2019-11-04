@@ -19,10 +19,10 @@ func CompanyOp() *companyOp {
 }
 
 func (op *companyOp) Add(c dots.Company) (int, error) {
-	qry := "insert into companies (longname, tin, rn) values(?, ?, ?)"
+	qry := "insert into companies (longname, tin, rn, is_client, is_contractor) values(?, ?, ?, ?, ?)"
 	db := store.DB
 
-	res, err := db.Exec(qry, c.Longname, c.TIN, c.RN)
+	res, err := db.Exec(qry, c.Longname, c.TIN, c.RN, c.IsClient, c.IsContractor)
 	if err != nil {
 		return 0, err
 	}
@@ -31,10 +31,10 @@ func (op *companyOp) Add(c dots.Company) (int, error) {
 }
 
 func (op *companyOp) Modify(c dots.Company) error {
-	qry := "update companies set longname=?, tin=?, rn=? where id=?"
+	qry := "update companies set longname=?, tin=?, rn=?, is_client=?, is_contractor=? where id=?"
 	db := store.DB
 
-	_, err := db.Exec(qry, c.Longname, c.TIN, c.RN, c.ID)
+	_, err := db.Exec(qry, c.Longname, c.TIN, c.RN, c.IsClient, c.IsContractor, c.ID)
 	if err != nil {
 		return err
 	}

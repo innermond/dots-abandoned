@@ -21,10 +21,12 @@ const (
 )
 
 type Company struct {
-	ID       int
-	Longname string
-	TIN      string
-	RN       string
+	ID           int
+	Longname     string
+	TIN          string
+	RN           string
+	IsClient     bool
+	IsContractor bool
 }
 
 type Address struct {
