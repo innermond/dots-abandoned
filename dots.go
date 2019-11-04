@@ -1,5 +1,7 @@
 package dots
 
+import "math/big"
+
 type UserService interface {
 	Add(User) (int, error)
 	//FindByUsername(string) (*User, error)
@@ -44,3 +46,17 @@ type Iban struct {
 	Iban     string
 	Bankname string
 }
+
+type Work struct {
+	ID        int
+	Label     string
+	Quantity  float64
+	Unit      WorkUnit
+	UnitPrice big.Rat
+	Currency  Currency
+}
+
+type (
+	WorkUnit string
+	Currency string
+)

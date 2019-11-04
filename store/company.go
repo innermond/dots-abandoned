@@ -54,7 +54,7 @@ func (op *companyOp) Delete(cid int) error {
 }
 
 func (op *companyOp) Register(c dots.Company, addrr []dots.Address, ibans []dots.Iban) (int, error) {
-	qryCompany := "insert into companies (longname, tin, rn) values(?, ?, ?)"
+	qryCompany := "insert into companies (longname, tin, rn, is_client, is_contractor) values(?, ?, ?, ?, ?)"
 	qryAddresses := "insert into company_addresses (company_id, address, location) values"
 	qryIbans := "insert into company_ibans (company_id, iban, bankname) values"
 	db := store.DB
@@ -65,7 +65,7 @@ func (op *companyOp) Register(c dots.Company, addrr []dots.Address, ibans []dots
 	}
 	defer tx.Rollback()
 
-	resCompany, err := tx.Exec(qryCompany, c.Longname, c.TIN, c.RN)
+	resCompany, err := tx.Exec(qryCompany, c.Longname, c.TIN, c.RN, c.IsClient, c.IsContractor)
 	if err != nil {
 		return 0, err
 	}
