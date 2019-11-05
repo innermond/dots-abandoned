@@ -18,11 +18,11 @@ func Test_WorkAdd(t *testing.T) {
 		}
 
 		// assure test user is deleted as at this point is surely created
-		/*defer func(label string) {
+		defer func(label string) {
 			t.Logf("defer delete test work %s", label)
 			op.Delete(id)
 		}(tc.Label)
-		*/
+
 		w, err := op.FindById(id)
 		if err != nil {
 			t.Fatal(err)
