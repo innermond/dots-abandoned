@@ -1,32 +1,12 @@
 package store
 
 import (
-	"database/sql/driver"
-	"math/big"
+	"database/sql"
 
 	"github.com/innermond/dots"
 )
 
 type workOp struct {
-}
-
-type Rational big.Rat
-
-// valuer implementation
-func (r Rational) Value() (driver.Value, error) {
-	br := big.Rat(r)
-	return br.FloatString(2), nil
-}
-
-func (r *Rational) Scan(val interface{}) error {
-	var zero = &big.Rat{}
-	var b = big.Rat(*r)
-	var empty = b.Cmp(zero) == 0
-	if empty {
-		*r = Rational(*zero)
-		return nil
-	}
-	return nil
 }
 
 var workOperations *workOp
@@ -42,7 +22,7 @@ func (op *workOp) Add(w dots.Work) (int, error) {
 	qry := "insert into works (label, quantity, unit, unitprice, currency) values(?, ?, ?, ?, ?)"
 	db := store.DB
 
-	res, err := db.Exec(qry, w.Label, w.Quantity, w.Unit, Rational(w.UnitPrice), w.Currency)
+	res, err := db.Exec(qry, w.Label, w.Quantity, w.Unit, w.UnitPrice, w.Currency)
 	if err != nil {
 		return 0, err
 	}
@@ -59,6 +39,23 @@ func (op *workOp) Delete(wid int) error {
 		return err
 	}
 	return nil
+}
+
+func (op workOp) FindById(wid int) (dots.Work, error) {
+	qry := "select label, quantity, unit, unitprice, currency from works where id= ? limit 1"
+	db := store.DB
+
+	var w = dots.Work{}
+
+	err := db.QueryRow(qry, wid).Scan(&w.Label, &w.Quantity, &w.Unit, &w.UnitPrice, &w.Currency)
+	if err == sql.ErrNoRows {
+		return w, err
+	}
+	if err != nil {
+		return w, err
+	}
+
+	return w, nil
 }
 
 /*

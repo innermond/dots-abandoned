@@ -7,20 +7,27 @@ import (
 	"github.com/innermond/dots/testdata"
 )
 
-func Test_Work(t *testing.T) {
+func Test_WorkAdd(t *testing.T) {
 	op := WorkOp()
 
 	for _, tc := range testdata.WorkValid {
+		t.Logf("unitprice %v", tc.UnitPrice)
 		id, err := op.Add(tc)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		// assure test user is deleted as at this point is surely created
-		defer func(label string) {
+		/*defer func(label string) {
 			t.Logf("defer delete test work %s", label)
 			op.Delete(id)
 		}(tc.Label)
+		*/
+		w, err := op.FindById(id)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Logf("unitprice %v", w.UnitPrice)
 	}
 }
 
