@@ -18,6 +18,17 @@ func (r Rational) Value() (driver.Value, error) {
 	return br.FloatString(2), nil
 }
 
+func (r *Rational) Scan(val interface{}) error {
+	var zero = &big.Rat{}
+	var b = big.Rat(*r)
+	var empty = b.Cmp(zero) == 0
+	if empty {
+		*r = Rational(*zero)
+		return nil
+	}
+	return nil
+}
+
 var workOperations *workOp
 
 func WorkOp() *workOp {
