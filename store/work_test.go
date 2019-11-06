@@ -1,9 +1,11 @@
 package store
 
 import (
+	"math/big"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/innermond/dots"
 	"github.com/innermond/dots/testdata"
 )
 
@@ -31,29 +33,28 @@ func Test_WorkAdd(t *testing.T) {
 	}
 }
 
-/*
 func Test_WorkModify(t *testing.T) {
 	op := WorkOp()
 
 	for _, tc := range testdata.WorkValid {
-		id, err := op.Add(tc.Work)
+		id, err := op.Add(tc)
 		if err != nil {
 			t.Fatal(err)
 		}
-		tc.Work.ID = id
-		tc.Work.Longname += "modified"
-		tc.Work.IsClient = true
+		tc.ID = id
+		tc.Label += "modified"
+		br := big.Rat(tc.UnitPrice)
+		br.Add(&br, big.NewRat(2000, 100))
+		tc.UnitPrice = dots.Rational(br)
 
-		err = op.Modify(tc.Work)
+		err = op.Modify(tc)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		// assure test user is deleted as at this point is surely created
-		defer func(companyName string) {
-			t.Logf("defer delete test company %s", companyName)
+		defer func(tc dots.Work) {
+			t.Logf("defer delete test work %s unit price %v", tc.Label, tc.UnitPrice)
 			op.Delete(id)
-		}(tc.Work.Longname)
+		}(tc)
 	}
 }
-*/

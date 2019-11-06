@@ -58,12 +58,11 @@ func (op workOp) FindById(wid int) (dots.Work, error) {
 	return w, nil
 }
 
-/*
-func (op *workOp) Modify(c dots.Work) error {
-	qry := "update companies set longname=?, tin=?, rn=?, is_client=?, is_contractor=? where id=?"
+func (op *workOp) Modify(w dots.Work) error {
+	qry := "update works set label=?, quantity=?, unit=?, unitprice=?, currency=? where id=?"
 	db := store.DB
 
-	_, err := db.Exec(qry, c.Longname, c.TIN, c.RN, c.IsClient, c.IsContractor, c.ID)
+	_, err := db.Exec(qry, w.Label, w.Quantity, w.Unit, w.UnitPrice, w.Currency, w.ID)
 	if err != nil {
 		return err
 	}
@@ -71,6 +70,7 @@ func (op *workOp) Modify(c dots.Work) error {
 	return nil
 }
 
+/*
 func (op *workOp) Register(c dots.Work, addrr []dots.Address, ibans []dots.Iban) (int, error) {
 	qryWork := "insert into companies (longname, tin, rn, is_client, is_contractor) values(?, ?, ?, ?, ?)"
 	qryAddresses := "insert into work_addresses (work_id, address, location) values"
