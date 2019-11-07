@@ -60,6 +60,7 @@ type (
 )
 
 type WorkStage struct {
+	ID          int
 	Stage       string
 	Description string
 	Ordered     int
