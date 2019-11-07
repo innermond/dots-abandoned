@@ -58,3 +58,9 @@ type (
 	WorkUnit string
 	Currency string
 )
+
+type WorkStage struct {
+	Stage       string
+	Description string
+	Ordered     int
+}

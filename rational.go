@@ -12,6 +12,14 @@ func NewRational(a, b int64) Rational {
 	return Rational(*big.NewRat(a, b))
 }
 
+// TODO math operations on Rational or just work with underline big.Rat?
+func (r *Rational) Add(r1 *Rational) {
+	br := big.Rat(*r)
+	br1 := big.Rat(*r1)
+	br.Add(&br, &br1)
+	*r = Rational(br)
+}
+
 // valuer implementation
 func (r Rational) Value() (driver.Value, error) {
 	br := big.Rat(r)

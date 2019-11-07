@@ -8,34 +8,35 @@ import (
 	"github.com/innermond/dots/testdata"
 )
 
-func Test_WorkAdd(t *testing.T) {
-	op := WorkOp()
+func Test_WorkStagesAdd(t *testing.T) {
+	op := WorkStageOp()
 
-	for _, tc := range testdata.WorkValid {
-		t.Logf("unitprice %v", tc.UnitPrice)
+	for _, tc := range testdata.WorkStagesValid {
 		id, err := op.Add(tc)
 		if err != nil {
 			t.Fatal(err)
 		}
+		t.Logf("added stage %s with id %d", tc.Stage, id)
 
 		// assure test user is deleted as at this point is surely created
-		defer func(label string) {
-			t.Logf("defer delete test work %s", label)
-			op.Delete(id)
-		}(tc.Label)
+		defer func(tc dots.WorkStage) {
+			t.Logf("defer delete test workStage %s", tc.Stage)
+			op.Delete(tc.Ordered)
+		}(tc)
 
-		w, err := op.FindById(id)
+		w, err := op.FindByOrdered(tc.Ordered)
 		if err != nil {
 			t.Fatal(err)
 		}
-		t.Logf("unitprice %v", w.UnitPrice)
+		t.Logf("stage %v", w.Stage)
 	}
 }
 
-func Test_WorkModify(t *testing.T) {
+/*
+func Test_WorkStagesModify(t *testing.T) {
 	op := WorkOp()
 
-	for _, tc := range testdata.WorkValid {
+	for _, tc := range testdata.WorkStagesValid {
 		id, err := op.Add(tc)
 		if err != nil {
 			t.Fatal(err)
@@ -55,3 +56,4 @@ func Test_WorkModify(t *testing.T) {
 		}(tc)
 	}
 }
+*/
