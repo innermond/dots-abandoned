@@ -1,32 +1,12 @@
 package store
 
 import (
-	"database/sql/driver"
-	"math/big"
+	"database/sql"
 
 	"github.com/innermond/dots"
 )
 
 type workOp struct {
-}
-
-type Rational big.Rat
-
-// valuer implementation
-func (r Rational) Value() (driver.Value, error) {
-	br := big.Rat(r)
-	return br.FloatString(2), nil
-}
-
-func (r *Rational) Scan(val interface{}) error {
-	var zero = &big.Rat{}
-	var b = big.Rat(*r)
-	var empty = b.Cmp(zero) == 0
-	if empty {
-		*r = Rational(*zero)
-		return nil
-	}
-	return nil
 }
 
 var workOperations *workOp
@@ -42,7 +22,7 @@ func (op *workOp) Add(w dots.Work) (int, error) {
 	qry := "insert into works (label, quantity, unit, unitprice, currency) values(?, ?, ?, ?, ?)"
 	db := store.DB
 
-	res, err := db.Exec(qry, w.Label, w.Quantity, w.Unit, Rational(w.UnitPrice), w.Currency)
+	res, err := db.Exec(qry, w.Label, w.Quantity, w.Unit, w.UnitPrice, w.Currency)
 	if err != nil {
 		return 0, err
 	}
@@ -61,82 +41,31 @@ func (op *workOp) Delete(wid int) error {
 	return nil
 }
 
-/*
-func (op *workOp) Modify(c dots.Work) error {
-	qry := "update companies set longname=?, tin=?, rn=?, is_client=?, is_contractor=? where id=?"
+func (op workOp) FindById(wid int) (dots.Work, error) {
+	qry := "select label, quantity, unit, unitprice, currency from works where id= ? limit 1"
 	db := store.DB
 
-	_, err := db.Exec(qry, c.Longname, c.TIN, c.RN, c.IsClient, c.IsContractor, c.ID)
+	var w = dots.Work{}
+
+	err := db.QueryRow(qry, wid).Scan(&w.Label, &w.Quantity, &w.Unit, &w.UnitPrice, &w.Currency)
+	if err == sql.ErrNoRows {
+		return w, err
+	}
+	if err != nil {
+		return w, err
+	}
+
+	return w, nil
+}
+
+func (op *workOp) Modify(w dots.Work) error {
+	qry := "update works set label=?, quantity=?, unit=?, unitprice=?, currency=? where id=?"
+	db := store.DB
+
+	_, err := db.Exec(qry, w.Label, w.Quantity, w.Unit, w.UnitPrice, w.Currency, w.ID)
 	if err != nil {
 		return err
 	}
 
 	return nil
 }
-
-func (op *workOp) Register(c dots.Work, addrr []dots.Address, ibans []dots.Iban) (int, error) {
-	qryWork := "insert into companies (longname, tin, rn, is_client, is_contractor) values(?, ?, ?, ?, ?)"
-	qryAddresses := "insert into work_addresses (work_id, address, location) values"
-	qryIbans := "insert into work_ibans (work_id, iban, bankname) values"
-	db := store.DB
-
-	tx, err := db.Begin()
-	if err != nil {
-		return 0, err
-	}
-	defer tx.Rollback()
-
-	resWork, err := tx.Exec(qryWork, c.Longname, c.TIN, c.RN, c.IsClient, c.IsContractor)
-	if err != nil {
-		return 0, err
-	}
-	cid, err := resWork.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	aa := []string{}
-	xx := []interface{}{}
-	for _, adr := range addrr {
-		aa = append(aa, "(?, ?, ST_SRID(Point(?, ?), 4326))")
-		xx = append(xx,
-			[]interface{}{
-				cid,
-				adr.Address,
-				adr.Location.X,
-				adr.Location.Y,
-			}...,
-		)
-	}
-	qryAddresses += " " + strings.Join(aa, ",")
-	_, err = tx.Exec(qryAddresses, xx...)
-	if err != nil {
-		return 0, err
-	}
-
-	aa = []string{}
-	xx = []interface{}{}
-	for _, iban := range ibans {
-		aa = append(aa, "(?, ?, ?)")
-		xx = append(xx,
-			[]interface{}{
-				cid,
-				iban.Iban,
-				iban.Bankname,
-			}...,
-		)
-	}
-	qryIbans += " " + strings.Join(aa, ",")
-	_, err = tx.Exec(qryIbans, xx...)
-	if err != nil {
-		return 0, err
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		return 0, err
-	}
-
-	return int(cid), err
-}
-*/

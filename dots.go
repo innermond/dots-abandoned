@@ -1,7 +1,5 @@
 package dots
 
-import "math/big"
-
 type UserService interface {
 	Add(User) (int, error)
 	//FindByUsername(string) (*User, error)
@@ -52,7 +50,7 @@ type Work struct {
 	Label     string
 	Quantity  float64
 	Unit      WorkUnit
-	UnitPrice big.Rat
+	UnitPrice Rational
 	Currency  Currency
 }
 
@@ -60,3 +58,9 @@ type (
 	WorkUnit string
 	Currency string
 )
+
+type WorkStage struct {
+	Stage       string
+	Description string
+	Ordered     int
+}
